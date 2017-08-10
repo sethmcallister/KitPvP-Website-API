@@ -6,6 +6,7 @@ import com.skygrind.api.framework.user.profile.Profile;
 import com.skygrind.core.framework.user.CoreUserManager;
 import xyz.sethy.websiteapi.framework.leaderboards.LeaderboardEntry;
 import xyz.sethy.websiteapi.framework.leaderboards.LeaderboardManager;
+import xyz.sethy.websiteapi.impl.leaderboards.comparator.LeaderboardEntryComparator;
 import xyz.sethy.websiteapi.impl.leaderboards.comparator.ProfileDeathComparator;
 import xyz.sethy.websiteapi.impl.leaderboards.comparator.ProfileKillComparator;
 
@@ -38,7 +39,7 @@ public class CoreLeaderboardManager implements LeaderboardManager
 
     private List<LeaderboardEntry> getTopKills(Integer page)
     {
-        Set<Profile> profiles = new TreeSet<>(new ProfileKillComparator());
+        Queue<LeaderboardEntry> leaderboardEntries = new PriorityQueue<>(new LeaderboardEntryComparator());
         for(User user : ((CoreUserManager)API.getUserManager()).getUserDataDriver().findAll())
         {
             Profile profile = user.getProfile("kitpvp");
@@ -46,52 +47,20 @@ public class CoreLeaderboardManager implements LeaderboardManager
                 continue;
 
             profile.set("uuid", user.getUniqueId());
-            profiles.add(profile);
+            LeaderboardEntry entry = new CoreLeaderboardEntry(0, user.getUniqueId(), String.valueOf(profile.getDouble("kills").intValue()));
+            leaderboardEntries.add(entry);
         }
-
-        Map<Profile, Integer> map = new ConcurrentHashMap<>();
+        List<LeaderboardEntry> entries = new LinkedList<>();
         int i = 0;
-        for(Profile profile : profiles)
+        while(!leaderboardEntries.isEmpty())
         {
-            map.put(profile, i);
             i++;
+            LeaderboardEntry leaderboardEntry = leaderboardEntries.poll();
+            leaderboardEntry.setPlace(i);
+            System.out.println("score = " + leaderboardEntry.getScore());
+            entries.add(leaderboardEntry);
         }
-
-//        int maxPages = profiles.size() / 10;
-//        maxPages++;
-//
-//        if(page > maxPages || page == 0)
-//            page = 1;
-//
-//        final int start = (page - 1) * 10;
-
-        List<LeaderboardEntry> entries = new ArrayList<>();
-
-        int index = 0;
-
-        for (final Profile profile1 : profiles)
-        {
-            index++;
-            User user = API.getUserManager().findByUniqueId((UUID) profile1.getObject("uuid"));
-            LeaderboardEntry entry = new CoreLeaderboardEntry(index, user, String.valueOf(profile1.getDouble("kills").intValue()));
-            entries.add(entry);
-        }
-
-//        for(final Map.Entry<Profile, Integer> entry : map.entrySet())
-//        {
-//            index++;
-//            if (index++ < start)
-//                continue;
-//
-//            if(index > start + 10)
-//                break;
-//
-//            User user = API.getUserManager().findByUniqueId((UUID) entry.getKey().getObject("uuid"));
-//            LeaderboardEntry leaderboardEntry = new CoreLeaderboardEntry(index, user, String.valueOf(entry.getKey().getDouble("kills").intValue()));
-//            entries.add(leaderboardEntry);
-//        }
         return entries;
-
     }
 
     private List<LeaderboardEntry> getTopDeaths(Integer page)
@@ -135,7 +104,7 @@ public class CoreLeaderboardManager implements LeaderboardManager
 
             User user = API.getUserManager().findByUniqueId((UUID) entry.getKey().getObject("uuid"));
 
-            LeaderboardEntry leaderboardEntry = new CoreLeaderboardEntry(index, user, String.valueOf(entry.getKey().getDouble("deaths").intValue()));
+            LeaderboardEntry leaderboardEntry = new CoreLeaderboardEntry(index, user.getUniqueId(), String.valueOf(entry.getKey().getDouble("deaths").intValue()));
             entries.add(leaderboardEntry);
         }
         return entries;

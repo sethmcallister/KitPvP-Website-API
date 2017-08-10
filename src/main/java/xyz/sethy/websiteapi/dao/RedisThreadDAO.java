@@ -17,7 +17,7 @@ public class RedisThreadDAO
     public RedisThreadDAO()
     {
         this.gson = new GsonBuilder().setPrettyPrinting().create();
-        this.jedis = new Jedis();
+        this.jedis = new Jedis("172.17.0.1", 6379);
     }
 
     public void insert(CoreThread link)

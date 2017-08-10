@@ -2,6 +2,7 @@ package xyz.sethy.websiteapi.impl.forums;
 
 import com.skygrind.api.API;
 import com.skygrind.api.framework.user.User;
+import com.skygrind.core.framework.user.CoreUserManager;
 import xyz.sethy.websiteapi.framework.forum.Reply;
 import xyz.sethy.websiteapi.framework.forum.Thread;
 
@@ -78,7 +79,7 @@ public class CoreThread implements Thread
     @Override
     public User getAuthor()
     {
-        return API.getUserManager().findByUniqueId(author);
+        return ((CoreUserManager) API.getUserManager()).getUserDataDriver().findById(author);
     }
 
     @Override

@@ -11,4 +11,5 @@ public interface LeaderboardEntry
     Integer getPlace();
     User getUser();
     String getScore();
+    void setPlace(Integer place);
 }

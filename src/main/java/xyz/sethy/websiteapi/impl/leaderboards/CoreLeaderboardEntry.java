@@ -1,18 +1,22 @@
 package xyz.sethy.websiteapi.impl.leaderboards;
 
+import com.skygrind.api.API;
 import com.skygrind.api.framework.user.User;
+import com.skygrind.core.framework.user.CoreUserManager;
 import xyz.sethy.websiteapi.framework.leaderboards.LeaderboardEntry;
+
+import java.util.UUID;
 
 /**
  * Created by seth on 06/07/17.
  */
 public class CoreLeaderboardEntry implements LeaderboardEntry
 {
-    private final Integer place;
-    private final User profile;
+    private Integer place;
+    private final UUID profile;
     private final String score;
 
-    public CoreLeaderboardEntry(final Integer place, final User profile, final String score)
+    public CoreLeaderboardEntry(final Integer place, final UUID profile, final String score)
     {
         this.place = place;
         this.profile = profile;
@@ -28,12 +32,18 @@ public class CoreLeaderboardEntry implements LeaderboardEntry
     @Override
     public User getUser()
     {
-        return profile;
+        return ((CoreUserManager) API.getUserManager()).getUserDataDriver().findById(profile);
     }
 
     @Override
     public String getScore()
     {
         return score;
+    }
+
+    @Override
+    public void setPlace(final Integer place)
+    {
+        this.place = place;
     }
 }
